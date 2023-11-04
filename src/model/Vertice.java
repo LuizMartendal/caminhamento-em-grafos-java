@@ -9,16 +9,12 @@ public class Vertice {
 
     private List<Aresta> arestas = new ArrayList<>();
 
-    private Integer grau;
+    private Integer grau = 0;
 
     public Vertice() {}
 
     public Vertice(String nome) {
         this.setNome(nome);
-    }
-
-    public List<Vertice> getConexoes() {
-        return null;
     }
 
     public void setNome(String nome) {
@@ -57,6 +53,10 @@ public class Vertice {
             }
         }
         return null;
+    }
+
+    public List<Aresta> getArestas() {
+        return this.arestas;
     }
 
     public void deleteAresta(Vertice vertice) {

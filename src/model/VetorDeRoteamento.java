@@ -1,29 +1,86 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class VetorDeRoteamento {
 
-    private Vertice[] pais;
+    private List<ColunaVetorRoteamento> vertices = new ArrayList<>();
 
-    private Integer[] distancia;
+    public VetorDeRoteamento() {}
 
-    public VetorDeRoteamento(Vertice[] pais, Integer[] distancia) {
-        this.setPais(pais);
-        this.setDistancia(distancia);
+    public void addColunaVetorDeRoteamento(Vertice v, Integer distancia) {
+        vertices.add(new ColunaVetorRoteamento(
+            v, distancia
+        ));
     }
 
-    public Vertice[] getPais() {
-        return this.pais;
+    public void addColunaVetorDeRoteamento(Vertice v) {
+        vertices.add(new ColunaVetorRoteamento(v));
     }
 
-    public void setPais(Vertice[] pais) {
-        this.pais = pais;
+    public ColunaVetorRoteamento getColuna(int posicao) {
+        return vertices.get(posicao);
     }
 
-    public Integer[] getDistancia() {
-        return this.distancia;
+    public ColunaVetorRoteamento getColuna(Vertice vertice) {
+        for (ColunaVetorRoteamento coluna : this.vertices) {
+            if (coluna.getVertice().equals(vertice)) {
+                return coluna;
+            }
+        }
+        return null;
     }
 
-    public void setDistancia(Integer[] distancia) {
-        this.distancia = distancia;
+    public List<ColunaVetorRoteamento> getColunasFila() {
+        List<ColunaVetorRoteamento> colunas = new ArrayList<>();
+
+        for (ColunaVetorRoteamento coluna : this.vertices) {
+            if (!coluna.isPercorrido()) {
+                colunas.add(coluna);
+            }
+        }
+        return colunas;
+    }
+
+    public List<Vertice> getVertices() {
+        List<Vertice> vertices = new ArrayList<>();
+        for (ColunaVetorRoteamento coluna : this.vertices) {
+            vertices.add(coluna.getVertice());
+        }
+        return vertices;
+    }
+
+    public void removeFila(Vertice v) {
+        for (ColunaVetorRoteamento c : this.vertices) {
+            if (v.equals(c.getVertice())) {
+                c.setPercorrido(true);
+            }
+        }
+    }
+
+    public List<Aresta> getVerticesAdjacentes(Vertice v) {
+        return v.getArestas();
+    }
+
+    public ColunaVetorRoteamento getMin(List<ColunaVetorRoteamento> lista) {
+        ColunaVetorRoteamento coluna = null;
+        Integer distancia = Integer.MAX_VALUE;
+        for (ColunaVetorRoteamento c : lista) {
+            if (c.getDistancia() < distancia) {
+                coluna = c;
+                distancia = c.getDistancia();
+            }
+        }
+        return coluna;
+    }
+
+    @Override
+    public String toString() {
+        String str = "";
+        for (ColunaVetorRoteamento c : this.vertices) {
+            str += "Vertice = " + c.getVertice().toString() + ", D = " + c.getDistancia() + ", Pai = " + c.getPai() + "\n";
+        }
+        return str;
     }
 }

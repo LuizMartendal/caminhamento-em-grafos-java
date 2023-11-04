@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Grafo {
 
-    private List<Vertice> vertices;
+    private List<Vertice> vertices = new ArrayList<>();
 
     private Vertice verticeInicial;
 
@@ -45,28 +45,38 @@ public class Grafo {
         throw new IllegalArgumentException("Es gibt keinen solchen Scheitelpunkt in der Liste");
     }
 
-    public VetorDeRoteamento dijkstra(Vertice verticeInicio) {
-        Vertice[] pais = new Vertice[this.vertices.size()];
-        Integer[] d = this.setD();
-        List<Vertice> q = this.setQ();
+    public VetorDeRoteamento dijkstra(Vertice inicio) {
+        VetorDeRoteamento vetorDeRoteamento = this.initializeSingleSource();
+        List<ColunaVetorRoteamento> fila = vetorDeRoteamento.getColunasFila();
 
-        return null;
-    }
-
-    private Integer[] setD() {
-        int quantidade = this.vertices.size();
-        Integer[] d = new Integer[quantidade];
-
-        for (int i = 0 ; i < quantidade; i++) {
-            d[i] = Integer.MAX_VALUE;
+        while (!fila.isEmpty()) {
+            ColunaVetorRoteamento u = vetorDeRoteamento.getMin(fila);
+            u.setPercorrido(true);
+            for (Aresta v : vetorDeRoteamento.getVerticesAdjacentes(u.getVertice())) {
+                ColunaVetorRoteamento coluna = vetorDeRoteamento.getColuna(v.getDestino());
+                Integer distanciaV = coluna.getDistancia();
+                Integer distaciaU = u.getDistancia();
+                Integer custo = v.getPeso();
+                if (distanciaV > distaciaU + custo) {
+                    coluna.setDistancia(distaciaU + custo);
+                    coluna.setPai(u.getVertice());
+                    System.out.println(vetorDeRoteamento);
+                }
+            }
         }
-        return d;
+        return vetorDeRoteamento;
     }
 
-    private List<Vertice> setQ() {
-        List<Vertice> vertices = new ArrayList<>();
-        System.arraycopy(this.vertices, 0, vertices, 0, this.vertices.size());
-        return vertices;
+    private VetorDeRoteamento initializeSingleSource() {
+        VetorDeRoteamento vetorDeRoteamento = new VetorDeRoteamento();
+        for (Vertice v : vertices) {
+            if (v.equals(verticeInicial)) {
+                vetorDeRoteamento.addColunaVetorDeRoteamento(v, 0);
+            } else {
+                vetorDeRoteamento.addColunaVetorDeRoteamento(v);
+            }
+        }
+        return vetorDeRoteamento;
     }
 
     @Override
@@ -181,7 +191,7 @@ public class Grafo {
         vertices.add(v17);
         vertices.add(v18);
 
-        Grafo grafo = new Grafo();
-        System.out.println(grafo);
+        Grafo grafo = new Grafo(vertices, v1);
+        grafo.dijkstra(v1);
     }
 }
