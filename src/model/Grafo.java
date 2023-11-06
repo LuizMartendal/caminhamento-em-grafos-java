@@ -2,6 +2,7 @@ package model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Grafo {
 
@@ -49,19 +50,27 @@ public class Grafo {
         VetorDeRoteamento vetorDeRoteamento = this.initializeSingleSource();
         List<ColunaVetorRoteamento> fila = vetorDeRoteamento.getColunasFila();
 
+        System.out.println(vetorDeRoteamento + "\n");
+
         while (!fila.isEmpty()) {
             ColunaVetorRoteamento u = vetorDeRoteamento.getMin(fila);
             u.setPercorrido(true);
-            for (Aresta v : vetorDeRoteamento.getVerticesAdjacentes(u.getVertice())) {
+            fila.remove(u);
+            boolean change = false;
+            for (Aresta v : u.getVertice().getArestas()) {
                 ColunaVetorRoteamento coluna = vetorDeRoteamento.getColuna(v.getDestino());
                 Integer distanciaV = coluna.getDistancia();
                 Integer distaciaU = u.getDistancia();
                 Integer custo = v.getPeso();
-                if (distanciaV > distaciaU + custo) {
+                if (distanciaV > (distaciaU + custo)) {
                     coluna.setDistancia(distaciaU + custo);
                     coluna.setPai(u.getVertice());
-                    System.out.println(vetorDeRoteamento);
+                    System.out.println(vetorDeRoteamento + "\n");
+                    change = true;
                 }
+            }
+            if (!change) {
+                System.out.println(vetorDeRoteamento + "\n");
             }
         }
         return vetorDeRoteamento;
@@ -70,7 +79,7 @@ public class Grafo {
     private VetorDeRoteamento initializeSingleSource() {
         VetorDeRoteamento vetorDeRoteamento = new VetorDeRoteamento();
         for (Vertice v : vertices) {
-            if (v.equals(verticeInicial)) {
+            if (Objects.equals(v, verticeInicial)) {
                 vetorDeRoteamento.addColunaVetorDeRoteamento(v, 0);
             } else {
                 vetorDeRoteamento.addColunaVetorDeRoteamento(v);

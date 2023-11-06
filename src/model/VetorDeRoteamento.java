@@ -67,7 +67,7 @@ public class VetorDeRoteamento {
         ColunaVetorRoteamento coluna = null;
         Integer distancia = Integer.MAX_VALUE;
         for (ColunaVetorRoteamento c : lista) {
-            if (c.getDistancia() < distancia) {
+            if (c.getDistancia() < distancia && !c.isPercorrido()) {
                 coluna = c;
                 distancia = c.getDistancia();
             }
@@ -79,7 +79,23 @@ public class VetorDeRoteamento {
     public String toString() {
         String str = "";
         for (ColunaVetorRoteamento c : this.vertices) {
-            str += "Vertice = " + c.getVertice().toString() + ", D = " + c.getDistancia() + ", Pai = " + c.getPai() + "\n";
+            str += "\t" + c.getVertice().getNome();
+        }
+        str += "\nD";
+        for (ColunaVetorRoteamento c : this.vertices) {
+            str += "\t" + (c.getDistancia().equals(Integer.MAX_VALUE) ? "?" : c.getDistancia());
+        }
+        str += "\nPai";
+        for (ColunaVetorRoteamento c : this.vertices) {
+            str += "\t" + (c.getPai() != null ? c.getPai().getNome() : "NIL");
+        }
+        str += "\nQ";
+        for (ColunaVetorRoteamento c : this.vertices) {
+            str += "\t" + (c.isPercorrido() ? "" : "X");
+        }
+        str += "\nS";
+        for (ColunaVetorRoteamento c : this.vertices) {
+            str += "\t" + (c.isPercorrido() ? "X" : "");
         }
         return str;
     }
