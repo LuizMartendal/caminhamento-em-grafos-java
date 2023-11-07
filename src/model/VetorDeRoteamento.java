@@ -77,26 +77,18 @@ public class VetorDeRoteamento {
 
     @Override
     public String toString() {
-        String str = "";
+        String V = "";
+        String D = "\nD";
+        String pai = "\nPai";
+        String Q = "\nQ";
+        String S = "\nS";
         for (ColunaVetorRoteamento c : this.vertices) {
-            str += "\t" + c.getVertice().getNome();
+            V += "\t" + c.getVertice().getNome();
+            D += "\t" + (c.getDistancia().equals(Integer.MAX_VALUE) ? "?" : c.getDistancia());
+            pai += "\t" + (c.getPai() != null ? c.getPai().getNome() : "NIL");
+            Q += "\t" + (c.isPercorrido() ? "" : "X");
+            S += "\t" + (c.isPercorrido() ? "X" : "");
         }
-        str += "\nD";
-        for (ColunaVetorRoteamento c : this.vertices) {
-            str += "\t" + (c.getDistancia().equals(Integer.MAX_VALUE) ? "?" : c.getDistancia());
-        }
-        str += "\nPai";
-        for (ColunaVetorRoteamento c : this.vertices) {
-            str += "\t" + (c.getPai() != null ? c.getPai().getNome() : "NIL");
-        }
-        str += "\nQ";
-        for (ColunaVetorRoteamento c : this.vertices) {
-            str += "\t" + (c.isPercorrido() ? "" : "X");
-        }
-        str += "\nS";
-        for (ColunaVetorRoteamento c : this.vertices) {
-            str += "\t" + (c.isPercorrido() ? "X" : "");
-        }
-        return str;
+        return V + D + pai + Q + S;
     }
 }
