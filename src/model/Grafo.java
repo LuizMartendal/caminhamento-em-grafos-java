@@ -28,39 +28,55 @@ public class Grafo {
             System.out.println("Aplicando Dijkstra no vétice " + v.getNome() + "\n" + vetorDeRoteamento + "\n");
             vetorDeRoteamentoList.add(vetorDeRoteamento);
         }
-        ColunaVetorRoteamento[][] vetorD = getVetorD(vetorDeRoteamentoList, verticesImpares);
-        imprimirVetorD(vetorD, verticesImpares);
+
+        ColunaVetorRoteamento[][] matrizD = getMatrizD(vetorDeRoteamentoList, verticesImpares);
+        imprimirVetorD(matrizD, verticesImpares);
+
+        List<ColunaVetorRoteamento[]> paresMinimos = getParesMinimos(matrizD);
+        System.out.println();
+        imprimirParesMinimos(paresMinimos);
     }
 
-    private ColunaVetorRoteamento[][] getVetorD(List<VetorDeRoteamento> vetorDeRoteamentoList, List<Vertice> verticesImpares) {
+    private List<ColunaVetorRoteamento[]> getParesMinimos(ColunaVetorRoteamento[][] vetorD) {
+        List<ColunaVetorRoteamento[]> paresMinimos = new ArrayList<>();
+        Integer[] controle = new Integer[vetorD.length];
+        for (int i = 0; i < vetorD.length; i++) {
+            ColunaVetorRoteamento min = new ColunaVetorRoteamento();
+            min.setDistancia(Integer.MAX_VALUE);
+            int columnIndex = 0;
+            if (controle[i] == null || controle[i] == 0) {
+                for (int j = 0; j < vetorD.length; j++) {
+                    if ((controle[j] == null || controle[j] == 0) && i != j && vetorD[i][j].getDistancia() < min.getDistancia()) {
+                        min = vetorD[i][j];
+                        columnIndex = j;
+                    }
+                }
+                controle[i] = 1;
+                controle[columnIndex] = 1;
+                ColunaVetorRoteamento[] colunaVetorRoteamentos = new ColunaVetorRoteamento[2];
+                colunaVetorRoteamentos[0] = vetorD[i][i];
+                colunaVetorRoteamentos[1] = vetorD[i][columnIndex];
+                paresMinimos.add(colunaVetorRoteamentos);
+            }
+        }
+        return paresMinimos;
+    }
+
+    private ColunaVetorRoteamento[][] getMatrizD(List<VetorDeRoteamento> vetorDeRoteamentoList, List<Vertice> verticesImpares) {
+        List<VetorDeRoteamento> discardList = new ArrayList<>(vetorDeRoteamentoList);
         ColunaVetorRoteamento[][] vetorD = new ColunaVetorRoteamento[verticesImpares.size()][verticesImpares.size()];
         for (int i = 0; i < verticesImpares.size(); i++) {
             for (int j = 0; j < verticesImpares.size(); j++) {
-                ColunaVetorRoteamento c = vetorDeRoteamentoList.get(i).getColunasFila().get(j);
+                ColunaVetorRoteamento c = discardList.get(i).getColunasFila().get(j);
                 if (verticesImpares.contains(c.getVertice())) {
                     vetorD[i][j] = c;
                 } else {
-                    vetorDeRoteamentoList.get(i).getColunasFila().remove(c);
+                    discardList.get(i).getColunasFila().remove(c);
                     j--;
                 }
             }
         }
         return vetorD;
-    }
-
-    private void imprimirVetorD(ColunaVetorRoteamento[][] vetorD, List<Vertice> verticesImpares) {
-        String strVertices = "";
-        for (Vertice v : verticesImpares) {
-            strVertices += "\t" + v.getNome();
-        }
-        String strValores = "";
-        for (int i = 0; i < vetorD.length; i++) {
-            strValores += "\n" + verticesImpares.get(i).getNome();
-            for (int j = 0; j < vetorD[i].length; j++) {
-                strValores += "\t" + vetorD[i][j].getDistancia();
-            }
-        }
-        System.out.println(strVertices + strValores);
     }
 
     public List<Vertice> getVerticesImpares() {
@@ -113,6 +129,29 @@ public class Grafo {
             }
         }
         return vetorDeRoteamento;
+    }
+
+    private void imprimirParesMinimos(List<ColunaVetorRoteamento[]> paresMinimos) {
+        for (int i = 0; i < paresMinimos.size(); i++) {
+            System.out.println(
+                    paresMinimos.get(i)[0].getVertice().getNome() + " distância atual: " + paresMinimos.get(i)[0].getDistancia() + " -> " +
+                            paresMinimos.get(i)[1].getVertice().getNome() + " distância final: " + paresMinimos.get(i)[1].getDistancia());
+        }
+    }
+
+    private void imprimirVetorD(ColunaVetorRoteamento[][] vetorD, List<Vertice> verticesImpares) {
+        String strVertices = "";
+        for (Vertice v : verticesImpares) {
+            strVertices += "\t" + v.getNome();
+        }
+        String strValores = "";
+        for (int i = 0; i < vetorD.length; i++) {
+            strValores += "\n" + verticesImpares.get(i).getNome();
+            for (int j = 0; j < vetorD[i].length; j++) {
+                strValores += "\t" + vetorD[i][j].getDistancia();
+            }
+        }
+        System.out.println(strVertices + strValores);
     }
 
     @Override
