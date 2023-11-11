@@ -8,55 +8,82 @@ public class Grafo {
 
     private List<Vertice> vertices = new ArrayList<>();
 
-    private Vertice verticeInicial;
-
     public Grafo() {}
 
-    public Grafo(List<Vertice> vertices, String verticeInicial) {
+    public Grafo(List<Vertice> vertices) {
         this.vertices = vertices;
-        this.setVerticeInicial(verticeInicial);
-    }
-
-    public Grafo(List<Vertice> vertices, Vertice verticeInicial) {
-        this.vertices = vertices;
-        this.setVerticeInicial(verticeInicial);
     }
 
     public void addVertice(Vertice v) {
         this.vertices.add(v);
     }
 
-    public void setVerticeInicial(String verticeInicial) {
-        for (Vertice v : this.vertices) {
-            if (v.getNome().equals(verticeInicial)) {
-                this.verticeInicial = v;
-                return;
-            }
+    public void carteiroChines(Vertice inicio) {
+        List<Vertice> verticesImpares = getVerticesImpares();
+        System.out.println("\n");
+
+        List<VetorDeRoteamento> vetorDeRoteamentoList = new ArrayList<>();
+        for (Vertice v : verticesImpares) {
+            VetorDeRoteamento vetorDeRoteamento = dijkstra(v);
+            System.out.println("Aplicando Dijkstra no vétice " + v.getNome() + "\n" + vetorDeRoteamento + "\n");
+            vetorDeRoteamentoList.add(vetorDeRoteamento);
         }
-        throw new IllegalArgumentException("Es gibt keinen solchen Scheitelpunkt in der Liste");
+        ColunaVetorRoteamento[][] vetorD = getVetorD(vetorDeRoteamentoList, verticesImpares);
+        imprimirVetorD(vetorD, verticesImpares);
     }
 
-    public void setVerticeInicial(Vertice vertice) {
-        for (Vertice v : this.vertices) {
-            if (v.equals(vertice)) {
-                this.verticeInicial = vertice;
-                return;
+    private ColunaVetorRoteamento[][] getVetorD(List<VetorDeRoteamento> vetorDeRoteamentoList, List<Vertice> verticesImpares) {
+        ColunaVetorRoteamento[][] vetorD = new ColunaVetorRoteamento[verticesImpares.size()][verticesImpares.size()];
+        for (int i = 0; i < verticesImpares.size(); i++) {
+            for (int j = 0; j < verticesImpares.size(); j++) {
+                ColunaVetorRoteamento c = vetorDeRoteamentoList.get(i).getColunasFila().get(j);
+                if (verticesImpares.contains(c.getVertice())) {
+                    vetorD[i][j] = c;
+                } else {
+                    vetorDeRoteamentoList.get(i).getColunasFila().remove(c);
+                    j--;
+                }
             }
         }
-        throw new IllegalArgumentException("Es gibt keinen solchen Scheitelpunkt in der Liste");
+        return vetorD;
+    }
+
+    private void imprimirVetorD(ColunaVetorRoteamento[][] vetorD, List<Vertice> verticesImpares) {
+        String strVertices = "";
+        for (Vertice v : verticesImpares) {
+            strVertices += "\t" + v.getNome();
+        }
+        String strValores = "";
+        for (int i = 0; i < vetorD.length; i++) {
+            strValores += "\n" + verticesImpares.get(i).getNome();
+            for (int j = 0; j < vetorD[i].length; j++) {
+                strValores += "\t" + vetorD[i][j].getDistancia();
+            }
+        }
+        System.out.println(strVertices + strValores);
+    }
+
+    public List<Vertice> getVerticesImpares() {
+        List<Vertice> verticesImpares = new ArrayList<>();
+        System.out.print("Vértices ímpares: ");
+        for (Vertice v : vertices) {
+            if (v.getGrau() % 2 != 0) {
+                System.out.print(v.getNome() + "  ");
+                verticesImpares.add(v);
+            }
+        }
+        return verticesImpares;
     }
 
     public VetorDeRoteamento dijkstra(Vertice inicio) {
-        VetorDeRoteamento vetorDeRoteamento = this.initializeSingleSource();
-        List<ColunaVetorRoteamento> fila = vetorDeRoteamento.getColunasFila();
-
-        System.out.println(vetorDeRoteamento + "\n");
+        VetorDeRoteamento vetorDeRoteamento = this.initializeSingleSource(inicio);
+        List<ColunaVetorRoteamento> fila = vetorDeRoteamento.getColunasFilaNaoPercorrido();
 
         while (!fila.isEmpty()) {
             ColunaVetorRoteamento u = vetorDeRoteamento.getMin(fila);
             u.setPercorrido(true);
             fila.remove(u);
-            boolean change = false;
+           // boolean change = false;
             for (Aresta v : u.getVertice().getArestas()) {
                 ColunaVetorRoteamento coluna = vetorDeRoteamento.getColuna(v.getDestino());
                 Integer distanciaV = coluna.getDistancia();
@@ -65,19 +92,19 @@ public class Grafo {
                 if (distanciaV > (distaciaU + custo)) {
                     coluna.setDistancia(distaciaU + custo);
                     coluna.setPai(u.getVertice());
-                    System.out.println(vetorDeRoteamento + "\n");
-                    change = true;
+                    //System.out.println(vetorDeRoteamento + "\n");
+                    //change = true;
                 }
             }
-            if (!change) {
-                System.out.println(vetorDeRoteamento + "\n");
-            }
+//            if (!change) {
+//                System.out.println(vetorDeRoteamento + "\n");
+//            }
         }
         return vetorDeRoteamento;
     }
 
-    private VetorDeRoteamento initializeSingleSource() {
-        VetorDeRoteamento vetorDeRoteamento = new VetorDeRoteamento();
+    private VetorDeRoteamento initializeSingleSource(Vertice verticeInicial) {
+        VetorDeRoteamento vetorDeRoteamento = new VetorDeRoteamento(verticeInicial);
         for (Vertice v : vertices) {
             if (Objects.equals(v, verticeInicial)) {
                 vetorDeRoteamento.addColunaVetorDeRoteamento(v, 0);
@@ -98,7 +125,7 @@ public class Grafo {
     }
 
     public static void main(String[] args) {
-        // VÃ©rtices
+        // Vértices
         Vertice v1 = new Vertice("V1");
         Vertice v2 = new Vertice("V2");
         Vertice v3 = new Vertice("V3");
@@ -200,7 +227,7 @@ public class Grafo {
         vertices.add(v17);
         vertices.add(v18);
 
-        Grafo grafo = new Grafo(vertices, v1);
-        grafo.dijkstra(v1);
+        Grafo grafo = new Grafo(vertices);
+        grafo.carteiroChines(v1);
     }
 }

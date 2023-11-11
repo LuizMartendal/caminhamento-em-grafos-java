@@ -7,7 +7,15 @@ public class VetorDeRoteamento {
 
     private List<ColunaVetorRoteamento> vertices = new ArrayList<>();
 
-    public VetorDeRoteamento() {}
+    private final Vertice verticeInicial;
+
+    public VetorDeRoteamento(Vertice verticeInicial) {
+        this.verticeInicial = verticeInicial;
+    }
+
+    public Vertice getVerticeInicial() {
+        return this.verticeInicial;
+    }
 
     public void addColunaVetorDeRoteamento(Vertice v, Integer distancia) {
         vertices.add(new ColunaVetorRoteamento(
@@ -32,7 +40,7 @@ public class VetorDeRoteamento {
         return null;
     }
 
-    public List<ColunaVetorRoteamento> getColunasFila() {
+    public List<ColunaVetorRoteamento> getColunasFilaNaoPercorrido() {
         List<ColunaVetorRoteamento> colunas = new ArrayList<>();
 
         for (ColunaVetorRoteamento coluna : this.vertices) {
@@ -41,6 +49,10 @@ public class VetorDeRoteamento {
             }
         }
         return colunas;
+    }
+
+    public List<ColunaVetorRoteamento> getColunasFila() {
+        return vertices;
     }
 
     public List<Vertice> getVertices() {
