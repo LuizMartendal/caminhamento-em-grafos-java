@@ -5,7 +5,7 @@ public class ColunaVetorRoteamento {
 
     private Integer distancia;
 
-    private Vertice pai;
+    private ColunaVetorRoteamento pai;
 
     private boolean percorrido;
 
@@ -39,11 +39,11 @@ public class ColunaVetorRoteamento {
         this.distancia = distancia;
     }
 
-    public Vertice getPai() {
+    public ColunaVetorRoteamento getPai() {
         return pai;
     }
 
-    public void setPai(Vertice pai) {
+    public void setPai(ColunaVetorRoteamento pai) {
         this.pai = pai;
     }
 

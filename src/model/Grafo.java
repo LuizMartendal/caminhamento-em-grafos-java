@@ -22,19 +22,33 @@ public class Grafo {
         List<Vertice> verticesImpares = getVerticesImpares();
         System.out.println("\n");
 
-        List<VetorDeRoteamento> vetorDeRoteamentoList = new ArrayList<>();
-        for (Vertice v : verticesImpares) {
-            VetorDeRoteamento vetorDeRoteamento = dijkstra(v);
-            System.out.println("Aplicando Dijkstra no vétice " + v.getNome() + "\n" + vetorDeRoteamento + "\n");
-            vetorDeRoteamentoList.add(vetorDeRoteamento);
+        while (!verticesImpares.isEmpty()) {
+            List<VetorDeRoteamento> vetorDeRoteamentoList = new ArrayList<>();
+            for (Vertice v : verticesImpares) {
+                VetorDeRoteamento vetorDeRoteamento = dijkstra(v);
+                System.out.println("Aplicando Dijkstra no vétice " + v.getNome() + "\n" + vetorDeRoteamento + "\n");
+                vetorDeRoteamentoList.add(vetorDeRoteamento);
+            }
+
+            ColunaVetorRoteamento[][] matrizD = getMatrizD(vetorDeRoteamentoList, verticesImpares);
+            imprimirMatrizD(matrizD, verticesImpares);
+
+            List<ColunaVetorRoteamento[]> paresMinimos = getParesMinimos(matrizD);
+            System.out.println();
+            imprimirParesMinimos(paresMinimos);
+
+            for (ColunaVetorRoteamento[] c : paresMinimos) {
+                ColunaVetorRoteamento pai = c[1].getPai();
+                ColunaVetorRoteamento atual = c[1];
+                while (pai != null) {
+                    atual.getVertice().addAresta(pai.getVertice(), atual.getDistancia() - pai.getDistancia());
+                    pai.getVertice().addAresta(atual.getVertice(), atual.getDistancia() - pai.getDistancia());
+                    atual = pai;
+                    pai = pai.getPai();
+                }
+            }
+            verticesImpares = getVerticesImpares();
         }
-
-        ColunaVetorRoteamento[][] matrizD = getMatrizD(vetorDeRoteamentoList, verticesImpares);
-        imprimirVetorD(matrizD, verticesImpares);
-
-        List<ColunaVetorRoteamento[]> paresMinimos = getParesMinimos(matrizD);
-        System.out.println();
-        imprimirParesMinimos(paresMinimos);
     }
 
     private List<ColunaVetorRoteamento[]> getParesMinimos(ColunaVetorRoteamento[][] vetorD) {
@@ -63,20 +77,18 @@ public class Grafo {
     }
 
     private ColunaVetorRoteamento[][] getMatrizD(List<VetorDeRoteamento> vetorDeRoteamentoList, List<Vertice> verticesImpares) {
-        List<VetorDeRoteamento> discardList = new ArrayList<>(vetorDeRoteamentoList);
-        ColunaVetorRoteamento[][] vetorD = new ColunaVetorRoteamento[verticesImpares.size()][verticesImpares.size()];
-        for (int i = 0; i < verticesImpares.size(); i++) {
-            for (int j = 0; j < verticesImpares.size(); j++) {
-                ColunaVetorRoteamento c = discardList.get(i).getColunasFila().get(j);
+        ColunaVetorRoteamento[][] matrizD = new ColunaVetorRoteamento[verticesImpares.size()][verticesImpares.size()];
+        for (int i = 0; i < vetorDeRoteamentoList.size(); i++) {
+            int cont = 0;
+            for (int j = 0; j < vetorDeRoteamentoList.get(0).getColunasFila().size(); j++) {
+                ColunaVetorRoteamento c = vetorDeRoteamentoList.get(i).getColunasFila().get(j);
                 if (verticesImpares.contains(c.getVertice())) {
-                    vetorD[i][j] = c;
-                } else {
-                    discardList.get(i).getColunasFila().remove(c);
-                    j--;
+                    matrizD[i][cont] = c;
+                    cont++;
                 }
             }
         }
-        return vetorD;
+        return matrizD;
     }
 
     public List<Vertice> getVerticesImpares() {
@@ -107,7 +119,7 @@ public class Grafo {
                 Integer custo = v.getPeso();
                 if (distanciaV > (distaciaU + custo)) {
                     coluna.setDistancia(distaciaU + custo);
-                    coluna.setPai(u.getVertice());
+                    coluna.setPai(u);
                     //System.out.println(vetorDeRoteamento + "\n");
                     //change = true;
                 }
@@ -133,22 +145,27 @@ public class Grafo {
 
     private void imprimirParesMinimos(List<ColunaVetorRoteamento[]> paresMinimos) {
         for (int i = 0; i < paresMinimos.size(); i++) {
-            System.out.println(
-                    paresMinimos.get(i)[0].getVertice().getNome() + " distância atual: " + paresMinimos.get(i)[0].getDistancia() + " -> " +
-                            paresMinimos.get(i)[1].getVertice().getNome() + " distância final: " + paresMinimos.get(i)[1].getDistancia());
+            System.out.print(paresMinimos.get(i)[1].getVertice().getNome());
+            ColunaVetorRoteamento pai = paresMinimos.get(i)[1].getPai();
+            while (pai != null) {
+                System.out.print(" -> " + pai.getVertice().getNome());
+                pai = pai.getPai();
+            }
+            System.out.println(" Distância final: " + paresMinimos.get(i)[1].getDistancia());
         }
+        System.out.println();
     }
 
-    private void imprimirVetorD(ColunaVetorRoteamento[][] vetorD, List<Vertice> verticesImpares) {
+    private void imprimirMatrizD(ColunaVetorRoteamento[][] matrizD, List<Vertice> verticesImpares) {
         String strVertices = "";
         for (Vertice v : verticesImpares) {
             strVertices += "\t" + v.getNome();
         }
         String strValores = "";
-        for (int i = 0; i < vetorD.length; i++) {
+        for (int i = 0; i < matrizD.length; i++) {
             strValores += "\n" + verticesImpares.get(i).getNome();
-            for (int j = 0; j < vetorD[i].length; j++) {
-                strValores += "\t" + vetorD[i][j].getDistancia();
+            for (int j = 0; j < matrizD[i].length; j++) {
+                strValores += "\t" + matrizD[i][j].getDistancia();
             }
         }
         System.out.println(strVertices + strValores);
@@ -268,5 +285,6 @@ public class Grafo {
 
         Grafo grafo = new Grafo(vertices);
         grafo.carteiroChines(v1);
+        System.out.println(grafo);
     }
 }

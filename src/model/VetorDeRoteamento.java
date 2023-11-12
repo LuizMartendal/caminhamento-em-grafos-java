@@ -97,7 +97,7 @@ public class VetorDeRoteamento {
         for (ColunaVetorRoteamento c : this.vertices) {
             V += "\t" + c.getVertice().getNome();
             D += "\t" + (c.getDistancia().equals(Integer.MAX_VALUE) ? "?" : c.getDistancia());
-            pai += "\t" + (c.getPai() != null ? c.getPai().getNome() : "NIL");
+            pai += "\t" + (c.getPai() != null ? c.getPai().getVertice().getNome() : "NIL");
             Q += "\t" + (c.isPercorrido() ? "" : "X");
             S += "\t" + (c.isPercorrido() ? "X" : "");
         }
