@@ -1,3 +1,4 @@
+package model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,7 @@ public class Grafo {
         List<Vertice> verticesImpares = getVerticesImpares();
         System.out.println("\n");
 
-        while (!verticesImpares.isEmpty()) {
+        while (verticesImpares.size() <= 1) {
             List<VetorDeRoteamento> vetorDeRoteamentoList = new ArrayList<>();
             for (Vertice v : verticesImpares) {
                 VetorDeRoteamento vetorDeRoteamento = dijkstra(v);
@@ -50,23 +51,32 @@ public class Grafo {
             verticesImpares = getVerticesImpares();
         }
 
+        if (verticesImpares.size() == 1) {
+            throw new RuntimeException("Grafos com vértices de grau impar, não podem ser euleriano");
+        }
+
         System.out.println(this);
 
-        List<Vertice> fluery = this.fluery();
+        List<Vertice> fluery = this.fluery(inicio);
         for (Vertice v : fluery) {
             System.out.println(v);
         }
     }
 
-    private List<Vertice> fluery() {
+    private List<Vertice> fluery(Vertice verticeInicial) {
         List<Vertice> copiaVertices = this.copia();
         List<Vertice> caminho = new ArrayList<>();
-        Vertice verticeInicial = copiaVertices.get(0);
-        caminho.add(verticeInicial);
+        Vertice inicio = null;
+        for (Vertice v : copiaVertices) {
+            if (verticeInicial.getNome().equals(v.getNome())) {
+                inicio = v;
+            }
+        }
+        caminho.add(inicio);
 
         Vertice v = caminho.get(0);
-        while (copiaVertices.size() != 0) {
-            caminho = this.criandoCaminho(copiaVertices, caminho, verticeInicial, v);
+        while (!copiaVertices.isEmpty()) {
+            caminho = this.criandoCaminho(copiaVertices, caminho, inicio, v);
         }
         return caminho;
     }
@@ -163,6 +173,33 @@ public class Grafo {
             }
         }
         return vetorDeRoteamento;
+    }
+
+    private boolean verticeValido(List<Vertice> copiaVertices, Vertice u, Aresta a) {
+        if (u.getGrau() == 1) {
+            return true;
+        }
+        int index = copiaVertices.indexOf(u);
+        boolean[] visitado = new boolean[copiaVertices.size()];
+        for (boolean b : visitado) {
+            b = false;
+        }
+        int cont1 = dfsCont(copiaVertices, u, index, visitado);
+        u.getArestas().remove(a);
+        int cont2 = dfsCont(copiaVertices, u, index, visitado);
+        u.getArestas().add(a);
+        return cont1 > cont2 ? false : true;
+    }
+
+    private int dfsCont(List<Vertice> copiaVertices, Vertice u, int index, boolean[] visitado) {
+        int cont = 1;
+        visitado[index] = true;
+        for (Vertice v : copiaVertices) {
+            if (!visitado[copiaVertices.indexOf(v)]) {
+                cont += dfsCont(copiaVertices, v, copiaVertices.indexOf(v), visitado);
+            }
+        }
+        return cont;
     }
 
     private VetorDeRoteamento initializeSingleSource(List<Vertice> copiaVertices, Vertice verticeInicial) {

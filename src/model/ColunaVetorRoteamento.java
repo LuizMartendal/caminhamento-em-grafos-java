@@ -1,4 +1,4 @@
-
+package model;
 
 public class ColunaVetorRoteamento {
     private Vertice vertice;
