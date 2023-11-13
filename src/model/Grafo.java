@@ -8,6 +8,8 @@ public class Grafo {
 
     private List<Vertice> vertices = new ArrayList<>();
 
+    private Long custoTotal = 0L;
+
     public Grafo() {
     }
 
@@ -55,12 +57,14 @@ public class Grafo {
             throw new RuntimeException("Grafos com vértices de grau impar, não podem ser euleriano");
         }
 
-        System.out.println("\nGrafo versão final \n" + this);
+        System.out.println("\nGrafo versão final:\n" + this);
 
         List<String> fleury = this.fleury(inicio);
+        System.out.println("Ciclo euleriano: ");
         for (String v : fleury) {
-            System.out.println(v);
+            System.out.print(v + " ");
         }
+        System.out.println("\nCusto total: " + custoTotal);
     }
 
     private List<String> fleury(Vertice verticeInicial) {
@@ -97,6 +101,7 @@ public class Grafo {
                         break;
                     }
                 }
+                custoTotal += aresta.getPeso();
                 destino.deleteAresta(aresta);
                 verticeAtual = destino;
                 caminho.add(verticeAtual.getNome());
@@ -192,6 +197,9 @@ public class Grafo {
                 verticesImpares.add(v);
             }
         }
+        if (verticesImpares.isEmpty()) {
+            System.out.println("NULL");
+        }
         return verticesImpares;
     }
 
@@ -248,7 +256,7 @@ public class Grafo {
                 System.out.print(" -> " + pai.getVertice().getNome());
                 pai = pai.getPai();
             }
-            System.out.println(" Dist?ncia final: " + paresMinimos.get(i)[1].getDistancia());
+            System.out.println(" Distância final: " + paresMinimos.get(i)[1].getDistancia());
         }
         System.out.println();
     }
