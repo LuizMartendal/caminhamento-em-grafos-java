@@ -1,4 +1,4 @@
-package model;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,12 +63,21 @@ public class Vertice {
         Aresta aresta = getAresta(vertice);
         if (aresta != null) {
             this.arestas.remove(aresta);
+            this.grau--;
         }
     }
 
     public void deleteAresta(int posicao) {
         if (this.arestas.size() + 1 >= posicao) {
             this.arestas.remove(posicao);
+            this.grau--;
+        }
+    }
+
+    public void deleteAresta(Aresta aresta) {
+        if (aresta != null) {
+            this.arestas.remove(aresta);
+            this.grau--;
         }
     }
 

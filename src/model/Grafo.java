@@ -1,4 +1,3 @@
-package model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +7,8 @@ public class Grafo {
 
     private List<Vertice> vertices = new ArrayList<>();
 
-    public Grafo() {}
+    public Grafo() {
+    }
 
     public Grafo(List<Vertice> vertices) {
         this.vertices = vertices;
@@ -26,7 +26,7 @@ public class Grafo {
             List<VetorDeRoteamento> vetorDeRoteamentoList = new ArrayList<>();
             for (Vertice v : verticesImpares) {
                 VetorDeRoteamento vetorDeRoteamento = dijkstra(v);
-                System.out.println("Aplicando Dijkstra no vétice " + v.getNome() + "\n" + vetorDeRoteamento + "\n");
+                System.out.println("Aplicando Dijkstra no vï¿½tice " + v.getNome() + "\n" + vetorDeRoteamento + "\n");
                 vetorDeRoteamentoList.add(vetorDeRoteamento);
             }
 
@@ -49,6 +49,144 @@ public class Grafo {
             }
             verticesImpares = getVerticesImpares();
         }
+
+        System.out.println(this);
+
+        List<Vertice> fluery = this.fluery();
+        for (Vertice v : fluery) {
+            System.out.println(v);
+        }
+    }
+
+    private List<Vertice> fluery() {
+        List<Vertice> copiaVertices = this.copia();
+        List<Vertice> caminho = new ArrayList<>();
+        Vertice verticeInicial = copiaVertices.get(0);
+        caminho.add(verticeInicial);
+
+        Vertice v = caminho.get(0);
+        while (copiaVertices.size() != 0) {
+            caminho = this.criandoCaminho(copiaVertices, caminho, verticeInicial, v);
+        }
+        return caminho;
+    }
+
+    private List<Vertice> criandoCaminho(List<Vertice> copiaVertices, List<Vertice> caminho, Vertice verticeInicial, Vertice verticeAtual) {
+        Aresta arestaRemovida, arestaRemovidoDoVerticeAtual;
+        Vertice verticeRemovido;
+        VetorDeRoteamento vetor;
+        ColunaVetorRoteamento coluna;
+        boolean hasPai;
+
+        for (Aresta a : verticeAtual.getArestas()) {
+            System.out.println("-----------");
+            System.out.println(verticeAtual);
+            System.out.println(a);
+            arestaRemovida = a;
+            verticeRemovido = arestaRemovida.getDestino();
+            arestaRemovida.setDestino(null);
+            arestaRemovidoDoVerticeAtual = verticeRemovido.getAresta(verticeAtual);
+            arestaRemovidoDoVerticeAtual.setDestino(null);
+            if (verticeAtual.getNome().equals("V6")) {
+                System.out.println("V2");
+            }
+            
+           // System.out.println("--");
+            //System.out.println(verticeAtual);
+            //System.out.println(arestaRemovida.getDestino());
+            vetor = this.dijkstra(verticeAtual);
+            coluna = vetor.getColuna(verticeInicial);
+            hasPai = coluna.getPai() != null || verticeAtual.equals(verticeInicial);
+            if (hasPai) {
+                arestaRemovida.setDestino(verticeRemovido);
+                arestaRemovidoDoVerticeAtual.setDestino(verticeAtual);
+                caminho.add(arestaRemovida.getDestino());
+                verticeAtual.deleteAresta(arestaRemovida);
+                arestaRemovida.getDestino().deleteAresta(arestaRemovidoDoVerticeAtual);
+                this.criandoCaminho(copiaVertices, caminho, verticeInicial, arestaRemovida.getDestino());
+            } else {
+                if (verticeAtual.getGrau() == 0) {
+                    vetor = this.dijkstra(arestaRemovida.getDestino());
+                    coluna = vetor.getColuna(verticeInicial);
+                    hasPai = coluna.getPai() != null || verticeAtual.equals(verticeInicial);
+                    if (hasPai) {
+                        arestaRemovida.setDestino(verticeRemovido);
+                        arestaRemovidoDoVerticeAtual.setDestino(verticeAtual);
+                        caminho.add(arestaRemovida.getDestino());
+                        verticeAtual.deleteAresta(arestaRemovida);
+                        arestaRemovida.getDestino().deleteAresta(arestaRemovidoDoVerticeAtual);
+                        this.criandoCaminho(copiaVertices, caminho, verticeInicial, arestaRemovida.getDestino());
+                    } else {
+                        arestaRemovida.setDestino(verticeRemovido);
+                        arestaRemovidoDoVerticeAtual.setDestino(verticeAtual);
+                    }
+                } else {
+                    arestaRemovida.setDestino(verticeRemovido);
+                    arestaRemovidoDoVerticeAtual.setDestino(verticeAtual);
+                }
+            }
+        }
+        return caminho;
+    }
+
+    private VetorDeRoteamento bfs(List<Vertice> copiaVertices, Vertice inicio, Vertice verticeIgnorar) {
+        VetorDeRoteamento vetorDeRoteamento = this.initializeSingleSource(copiaVertices, inicio);
+        List<ColunaVetorRoteamento> fila = vetorDeRoteamento.getColunasFilaNaoPercorrido();
+
+        int qtd = 0;
+        for (Aresta a : inicio.getArestas()) {
+            if (a.getDestino().equals(verticeIgnorar)) {
+                qtd++;
+            }
+        }
+
+        while (!fila.isEmpty()) {
+            ColunaVetorRoteamento u = vetorDeRoteamento.getMin(fila);
+            if (u == null) {
+                return vetorDeRoteamento;
+            }
+            u.setPercorrido(true);
+            fila.remove(u);
+            for (Aresta v : u.getVertice().getArestas()) {
+                ColunaVetorRoteamento coluna = vetorDeRoteamento.getColuna(v.getDestino());
+                Integer distanciaV = coluna.getDistancia();
+                Integer distaciaU = u.getDistancia();
+                Integer custo = v.getPeso();
+                if (!v.getDestino().equals(verticeIgnorar) || (v.getDestino().equals(verticeIgnorar) && qtd != 1)) {
+                    if (distanciaV > (distaciaU + custo)) {
+                        coluna.setDistancia(distaciaU + custo);
+                        coluna.setPai(u);
+                    }
+                } else {
+                    verticeIgnorar = null;
+                }
+            }
+        }
+        return vetorDeRoteamento;
+    }
+
+    private VetorDeRoteamento initializeSingleSource(List<Vertice> copiaVertices, Vertice verticeInicial) {
+        VetorDeRoteamento vetorDeRoteamento = new VetorDeRoteamento(verticeInicial);
+        for (Vertice v : copiaVertices) {
+            if (Objects.equals(v, verticeInicial)) {
+                vetorDeRoteamento.addColunaVetorDeRoteamento(v, 0);
+            } else {
+                vetorDeRoteamento.addColunaVetorDeRoteamento(v);
+            }
+        }
+        return vetorDeRoteamento;
+    }
+
+    private List<Vertice> copia() {
+        List<Vertice> copiaVertices = new ArrayList<>();
+        for (Vertice v : this.vertices) {
+            Vertice novoVertice = new Vertice(v.getNome());
+            for (Aresta a : v.getArestas()) {
+                novoVertice.addAresta(a.getDestino(), a.getPeso());
+            }
+            copiaVertices.add(novoVertice);
+        }
+        return copiaVertices;
     }
 
     private List<ColunaVetorRoteamento[]> getParesMinimos(ColunaVetorRoteamento[][] vetorD) {
@@ -60,7 +198,8 @@ public class Grafo {
             int columnIndex = 0;
             if (controle[i] == null || controle[i] == 0) {
                 for (int j = 0; j < vetorD.length; j++) {
-                    if ((controle[j] == null || controle[j] == 0) && i != j && vetorD[i][j].getDistancia() < min.getDistancia()) {
+                    if ((controle[j] == null || controle[j] == 0) && i != j
+                            && vetorD[i][j].getDistancia() < min.getDistancia()) {
                         min = vetorD[i][j];
                         columnIndex = j;
                     }
@@ -76,7 +215,8 @@ public class Grafo {
         return paresMinimos;
     }
 
-    private ColunaVetorRoteamento[][] getMatrizD(List<VetorDeRoteamento> vetorDeRoteamentoList, List<Vertice> verticesImpares) {
+    private ColunaVetorRoteamento[][] getMatrizD(List<VetorDeRoteamento> vetorDeRoteamentoList,
+            List<Vertice> verticesImpares) {
         ColunaVetorRoteamento[][] matrizD = new ColunaVetorRoteamento[verticesImpares.size()][verticesImpares.size()];
         for (int i = 0; i < vetorDeRoteamentoList.size(); i++) {
             int cont = 0;
@@ -93,7 +233,7 @@ public class Grafo {
 
     public List<Vertice> getVerticesImpares() {
         List<Vertice> verticesImpares = new ArrayList<>();
-        System.out.print("Vértices ímpares: ");
+        System.out.print("Vï¿½rtices ï¿½mpares: ");
         for (Vertice v : vertices) {
             if (v.getGrau() % 2 != 0) {
                 System.out.print(v.getNome() + "  ");
@@ -109,24 +249,29 @@ public class Grafo {
 
         while (!fila.isEmpty()) {
             ColunaVetorRoteamento u = vetorDeRoteamento.getMin(fila);
+            if (u == null) {
+                return vetorDeRoteamento;
+            }
             u.setPercorrido(true);
             fila.remove(u);
-           // boolean change = false;
+            // boolean change = false;
             for (Aresta v : u.getVertice().getArestas()) {
                 ColunaVetorRoteamento coluna = vetorDeRoteamento.getColuna(v.getDestino());
-                Integer distanciaV = coluna.getDistancia();
-                Integer distaciaU = u.getDistancia();
-                Integer custo = v.getPeso();
-                if (distanciaV > (distaciaU + custo)) {
-                    coluna.setDistancia(distaciaU + custo);
-                    coluna.setPai(u);
-                    //System.out.println(vetorDeRoteamento + "\n");
-                    //change = true;
+                if (coluna != null) {
+                    Integer distanciaV = coluna.getDistancia();
+                    Integer distaciaU = u.getDistancia();
+                    Integer custo = v.getPeso();
+                    if (distanciaV > (distaciaU + custo)) {
+                        coluna.setDistancia(distaciaU + custo);
+                        coluna.setPai(u);
+                        // System.out.println(vetorDeRoteamento + "\n");
+                        // change = true;
+                    }
                 }
             }
-//            if (!change) {
-//                System.out.println(vetorDeRoteamento + "\n");
-//            }
+            // if (!change) {
+            // System.out.println(vetorDeRoteamento + "\n");
+            // }
         }
         return vetorDeRoteamento;
     }
@@ -151,7 +296,7 @@ public class Grafo {
                 System.out.print(" -> " + pai.getVertice().getNome());
                 pai = pai.getPai();
             }
-            System.out.println(" Distância final: " + paresMinimos.get(i)[1].getDistancia());
+            System.out.println(" Distï¿½ncia final: " + paresMinimos.get(i)[1].getDistancia());
         }
         System.out.println();
     }
@@ -181,7 +326,7 @@ public class Grafo {
     }
 
     public static void main(String[] args) {
-        // Vértices
+        // Vï¿½rtices
         Vertice v1 = new Vertice("V1");
         Vertice v2 = new Vertice("V2");
         Vertice v3 = new Vertice("V3");
@@ -203,7 +348,7 @@ public class Grafo {
 
         // Arestas
         v1.addAresta(v2, 73);
-        
+
         v2.addAresta(v1, 73);
         v2.addAresta(v3, 39);
 
@@ -213,7 +358,7 @@ public class Grafo {
 
         v4.addAresta(v3, 64);
         v4.addAresta(v5, 174);
-        
+
         v5.addAresta(v4, 174);
         v5.addAresta(v6, 69);
         v5.addAresta(v7, 195);
@@ -225,30 +370,30 @@ public class Grafo {
 
         v7.addAresta(v5, 195);
         v7.addAresta(v15, 70);
-        
+
         v8.addAresta(v6, 64);
         v8.addAresta(v9, 52);
         v8.addAresta(v10, 90);
-        
+
         v9.addAresta(v8, 52);
         v9.addAresta(v11, 58);
 
         v10.addAresta(v8, 90);
-        
+
         v11.addAresta(v9, 58);
         v11.addAresta(v13, 35);
-        v11.addAresta(v14,115);
-    
+        v11.addAresta(v14, 115);
+
         v12.addAresta(v13, 68);
-        
+
         v13.addAresta(v11, 35);
         v13.addAresta(v12, 68);
         v13.addAresta(v14, 98);
-    
+
         v14.addAresta(v13, 98);
         v14.addAresta(v11, 115);
         v14.addAresta(v18, 79);
-    
+
         v15.addAresta(v7, 70);
         v15.addAresta(v17, 66);
         v15.addAresta(v6, 244);
@@ -258,7 +403,7 @@ public class Grafo {
         v17.addAresta(v15, 66);
         v17.addAresta(v16, 110);
         v17.addAresta(v18, 67);
-    
+
         v18.addAresta(v14, 79);
         v18.addAresta(v17, 67);
 
