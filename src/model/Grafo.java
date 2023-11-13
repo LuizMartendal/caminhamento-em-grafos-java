@@ -1,3 +1,4 @@
+//Luiz Henrique Martendal; Daniel KrÃ¼ger
 package model;
 
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ public class Grafo {
             List<VetorDeRoteamento> vetorDeRoteamentoList = new ArrayList<>();
             for (Vertice v : verticesImpares) {
                 VetorDeRoteamento vetorDeRoteamento = dijkstra(v);
-                System.out.println("Aplicando Dijkstra no vértice " + v.getNome() + "\n" + vetorDeRoteamento + "\n");
+                System.out.println("Aplicando Dijkstra no vï¿½rtice " + v.getNome() + "\n" + vetorDeRoteamento + "\n");
                 vetorDeRoteamentoList.add(vetorDeRoteamento);
             }
 
@@ -54,10 +55,10 @@ public class Grafo {
         }
 
         if (verticesImpares.size() == 1) {
-            throw new RuntimeException("Grafos com vértices de grau impar, não podem ser euleriano");
+            throw new RuntimeException("Grafos com vï¿½rtices de grau impar, nï¿½o podem ser euleriano");
         }
 
-        System.out.println("\nGrafo versão final:\n" + this);
+        System.out.println("\nGrafo versï¿½o final:\n" + this);
 
         List<String> fleury = this.fleury(inicio);
         System.out.println("Ciclo euleriano: ");
@@ -190,7 +191,7 @@ public class Grafo {
 
     public List<Vertice> getVerticesImpares() {
         List<Vertice> verticesImpares = new ArrayList<>();
-        System.out.print("Vértices ímpares: ");
+        System.out.print("Vï¿½rtices ï¿½mpares: ");
         for (Vertice v : vertices) {
             if (v.getGrau() % 2 != 0) {
                 System.out.print(v.getNome() + "  ");
@@ -256,7 +257,7 @@ public class Grafo {
                 System.out.print(" -> " + pai.getVertice().getNome());
                 pai = pai.getPai();
             }
-            System.out.println(" Distância final: " + paresMinimos.get(i)[1].getDistancia());
+            System.out.println(" Distï¿½ncia final: " + paresMinimos.get(i)[1].getDistancia());
         }
         System.out.println();
     }
