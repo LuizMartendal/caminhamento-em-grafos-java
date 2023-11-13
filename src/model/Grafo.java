@@ -23,11 +23,11 @@ public class Grafo {
         List<Vertice> verticesImpares = getVerticesImpares();
         System.out.println("\n");
 
-        while (verticesImpares.size() <= 1) {
+        while (verticesImpares.size() > 1) {
             List<VetorDeRoteamento> vetorDeRoteamentoList = new ArrayList<>();
             for (Vertice v : verticesImpares) {
                 VetorDeRoteamento vetorDeRoteamento = dijkstra(v);
-                System.out.println("Aplicando Dijkstra no vï¿½tice " + v.getNome() + "\n" + vetorDeRoteamento + "\n");
+                System.out.println("Aplicando Dijkstra no vértice " + v.getNome() + "\n" + vetorDeRoteamento + "\n");
                 vetorDeRoteamentoList.add(vetorDeRoteamento);
             }
 
@@ -52,139 +52,66 @@ public class Grafo {
         }
 
         if (verticesImpares.size() == 1) {
-            throw new RuntimeException("Grafos com vÃ©rtices de grau impar, nÃ£o podem ser euleriano");
+            throw new RuntimeException("Grafos com vértices de grau impar, não podem ser euleriano");
         }
 
-        System.out.println(this);
+        System.out.println("\nGrafo versão final \n" + this);
 
-        List<Vertice> fluery = this.fluery(inicio);
-        for (Vertice v : fluery) {
+        List<String> fleury = this.fleury(inicio);
+        for (String v : fleury) {
             System.out.println(v);
         }
     }
 
-    private List<Vertice> fluery(Vertice verticeInicial) {
+    private List<String> fleury(Vertice verticeInicial) {
         List<Vertice> copiaVertices = this.copia();
-        List<Vertice> caminho = new ArrayList<>();
+        List<String> caminho = new ArrayList<>();
         Vertice inicio = null;
         for (Vertice v : copiaVertices) {
             if (verticeInicial.getNome().equals(v.getNome())) {
                 inicio = v;
+                break;
             }
         }
-        caminho.add(inicio);
-
-        Vertice v = caminho.get(0);
-        while (!copiaVertices.isEmpty()) {
-            caminho = this.criandoCaminho(copiaVertices, caminho, inicio, v);
-        }
+        caminho.add(inicio.getNome());
+        criandoCaminho(copiaVertices, caminho, inicio, inicio);
         return caminho;
     }
 
-    private List<Vertice> criandoCaminho(List<Vertice> copiaVertices, List<Vertice> caminho, Vertice verticeInicial, Vertice verticeAtual) {
-        Aresta arestaRemovida, arestaRemovidoDoVerticeAtual;
-        Vertice verticeRemovido;
-        VetorDeRoteamento vetor;
-        ColunaVetorRoteamento coluna;
-        boolean hasPai;
-
-        for (Aresta a : verticeAtual.getArestas()) {
-            System.out.println("-----------");
-            System.out.println(verticeAtual);
-            System.out.println(a);
-            arestaRemovida = a;
-            verticeRemovido = arestaRemovida.getDestino();
-            arestaRemovida.setDestino(null);
-            arestaRemovidoDoVerticeAtual = verticeRemovido.getAresta(verticeAtual);
-            arestaRemovidoDoVerticeAtual.setDestino(null);
-            if (verticeAtual.getNome().equals("V6")) {
-                System.out.println("V2");
-            }
-            
-           // System.out.println("--");
-            //System.out.println(verticeAtual);
-            //System.out.println(arestaRemovida.getDestino());
-            vetor = this.dijkstra(verticeAtual);
-            coluna = vetor.getColuna(verticeInicial);
-            hasPai = coluna.getPai() != null || verticeAtual.equals(verticeInicial);
-            if (hasPai) {
-                arestaRemovida.setDestino(verticeRemovido);
-                arestaRemovidoDoVerticeAtual.setDestino(verticeAtual);
-                caminho.add(arestaRemovida.getDestino());
-                verticeAtual.deleteAresta(arestaRemovida);
-                arestaRemovida.getDestino().deleteAresta(arestaRemovidoDoVerticeAtual);
-                this.criandoCaminho(copiaVertices, caminho, verticeInicial, arestaRemovida.getDestino());
-            } else {
-                if (verticeAtual.getGrau() == 0) {
-                    vetor = this.dijkstra(arestaRemovida.getDestino());
-                    coluna = vetor.getColuna(verticeInicial);
-                    hasPai = coluna.getPai() != null || verticeAtual.equals(verticeInicial);
-                    if (hasPai) {
-                        arestaRemovida.setDestino(verticeRemovido);
-                        arestaRemovidoDoVerticeAtual.setDestino(verticeAtual);
-                        caminho.add(arestaRemovida.getDestino());
-                        verticeAtual.deleteAresta(arestaRemovida);
-                        arestaRemovida.getDestino().deleteAresta(arestaRemovidoDoVerticeAtual);
-                        this.criandoCaminho(copiaVertices, caminho, verticeInicial, arestaRemovida.getDestino());
-                    } else {
-                        arestaRemovida.setDestino(verticeRemovido);
-                        arestaRemovidoDoVerticeAtual.setDestino(verticeAtual);
-                    }
-                } else {
-                    arestaRemovida.setDestino(verticeRemovido);
-                    arestaRemovidoDoVerticeAtual.setDestino(verticeAtual);
+    private void criandoCaminho(List<Vertice> copiaVertices, List<String> caminho, Vertice verticeInicial, Vertice verticeAtual) {
+        do {
+            Aresta aresta = null;
+            for (int i = 0; i < verticeAtual.getArestas().size(); i++) {
+                Aresta a = verticeAtual.getAresta(i);
+                if (arestaValida(copiaVertices, verticeAtual, a) && !a.isPercorrido()) {
+                    aresta = a;
+                    break;
                 }
             }
-        }
-        return caminho;
-    }
-
-    private VetorDeRoteamento bfs(List<Vertice> copiaVertices, Vertice inicio, Vertice verticeIgnorar) {
-        VetorDeRoteamento vetorDeRoteamento = this.initializeSingleSource(copiaVertices, inicio);
-        List<ColunaVetorRoteamento> fila = vetorDeRoteamento.getColunasFilaNaoPercorrido();
-
-        int qtd = 0;
-        for (Aresta a : inicio.getArestas()) {
-            if (a.getDestino().equals(verticeIgnorar)) {
-                qtd++;
-            }
-        }
-
-        while (!fila.isEmpty()) {
-            ColunaVetorRoteamento u = vetorDeRoteamento.getMin(fila);
-            if (u == null) {
-                return vetorDeRoteamento;
-            }
-            u.setPercorrido(true);
-            fila.remove(u);
-            for (Aresta v : u.getVertice().getArestas()) {
-                ColunaVetorRoteamento coluna = vetorDeRoteamento.getColuna(v.getDestino());
-                Integer distanciaV = coluna.getDistancia();
-                Integer distaciaU = u.getDistancia();
-                Integer custo = v.getPeso();
-                if (!v.getDestino().equals(verticeIgnorar) || (v.getDestino().equals(verticeIgnorar) && qtd != 1)) {
-                    if (distanciaV > (distaciaU + custo)) {
-                        coluna.setDistancia(distaciaU + custo);
-                        coluna.setPai(u);
+            if (aresta != null) {
+                Vertice destino = aresta.getDestino();
+                verticeAtual.deleteAresta(aresta);
+                for (Aresta a : destino.getArestas()) {
+                    if (a.getDestino().equals(verticeAtual) && a.getPeso().equals(aresta.getPeso())) {
+                        aresta = a;
+                        break;
                     }
-                } else {
-                    verticeIgnorar = null;
                 }
+                destino.deleteAresta(aresta);
+                verticeAtual = destino;
+                caminho.add(verticeAtual.getNome());
             }
-        }
-        return vetorDeRoteamento;
+        } while (!verticeAtual.equals(verticeInicial));
     }
 
-    private boolean verticeValido(List<Vertice> copiaVertices, Vertice u, Aresta a) {
+    private boolean arestaValida(List<Vertice> copiaVertices, Vertice u, Aresta a) {
         if (u.getGrau() == 1) {
             return true;
         }
         int index = copiaVertices.indexOf(u);
         boolean[] visitado = new boolean[copiaVertices.size()];
-        for (boolean b : visitado) {
-            b = false;
-        }
         int cont1 = dfsCont(copiaVertices, u, index, visitado);
+        visitado = new boolean[copiaVertices.size()];
         u.getArestas().remove(a);
         int cont2 = dfsCont(copiaVertices, u, index, visitado);
         u.getArestas().add(a);
@@ -194,24 +121,12 @@ public class Grafo {
     private int dfsCont(List<Vertice> copiaVertices, Vertice u, int index, boolean[] visitado) {
         int cont = 1;
         visitado[index] = true;
-        for (Vertice v : copiaVertices) {
-            if (!visitado[copiaVertices.indexOf(v)]) {
-                cont += dfsCont(copiaVertices, v, copiaVertices.indexOf(v), visitado);
+        for (Aresta a : u.getArestas()) {
+            if (!visitado[copiaVertices.indexOf(a.getDestino())]) {
+                cont += dfsCont(copiaVertices, a.getDestino(), copiaVertices.indexOf(a.getDestino()), visitado);
             }
         }
         return cont;
-    }
-
-    private VetorDeRoteamento initializeSingleSource(List<Vertice> copiaVertices, Vertice verticeInicial) {
-        VetorDeRoteamento vetorDeRoteamento = new VetorDeRoteamento(verticeInicial);
-        for (Vertice v : copiaVertices) {
-            if (Objects.equals(v, verticeInicial)) {
-                vetorDeRoteamento.addColunaVetorDeRoteamento(v, 0);
-            } else {
-                vetorDeRoteamento.addColunaVetorDeRoteamento(v);
-            }
-        }
-        return vetorDeRoteamento;
     }
 
     private List<Vertice> copia() {
@@ -270,7 +185,7 @@ public class Grafo {
 
     public List<Vertice> getVerticesImpares() {
         List<Vertice> verticesImpares = new ArrayList<>();
-        System.out.print("Vï¿½rtices ï¿½mpares: ");
+        System.out.print("Vértices ímpares: ");
         for (Vertice v : vertices) {
             if (v.getGrau() % 2 != 0) {
                 System.out.print(v.getNome() + "  ");
@@ -333,7 +248,7 @@ public class Grafo {
                 System.out.print(" -> " + pai.getVertice().getNome());
                 pai = pai.getPai();
             }
-            System.out.println(" Distï¿½ncia final: " + paresMinimos.get(i)[1].getDistancia());
+            System.out.println(" Dist?ncia final: " + paresMinimos.get(i)[1].getDistancia());
         }
         System.out.println();
     }
@@ -363,7 +278,7 @@ public class Grafo {
     }
 
     public static void main(String[] args) {
-        // Vï¿½rtices
+        // V?rtices
         Vertice v1 = new Vertice("V1");
         Vertice v2 = new Vertice("V2");
         Vertice v3 = new Vertice("V3");
@@ -467,6 +382,5 @@ public class Grafo {
 
         Grafo grafo = new Grafo(vertices);
         grafo.carteiroChines(v1);
-        System.out.println(grafo);
     }
 }

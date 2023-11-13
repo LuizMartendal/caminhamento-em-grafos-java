@@ -4,6 +4,7 @@ public class Aresta {
 
     private Vertice destino;
     private Integer peso;
+    private boolean percorrido = false;
 
     public Aresta(Vertice destino, Integer peso) {
         this.destino = destino;
@@ -24,6 +25,14 @@ public class Aresta {
 
     public void setPeso(Integer peso) {
         this.peso = peso;
+    }
+
+    public boolean isPercorrido() {
+        return percorrido;
+    }
+
+    public void setPercorrido(boolean percorrido) {
+        this.percorrido = percorrido;
     }
 
     @Override
