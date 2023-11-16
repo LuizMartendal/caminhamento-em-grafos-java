@@ -211,11 +211,10 @@ public class Grafo {
         while (!fila.isEmpty()) {
             ColunaVetorRoteamento u = vetorDeRoteamento.getMin(fila);
             if (u == null) {
-                return vetorDeRoteamento;
+                throw new RuntimeException("Grafo desconexo!");
             }
             u.setPercorrido(true);
             fila.remove(u);
-            // boolean change = false;
             for (Aresta v : u.getVertice().getArestas()) {
                 ColunaVetorRoteamento coluna = vetorDeRoteamento.getColuna(v.getDestino());
                 if (coluna != null) {
@@ -225,14 +224,9 @@ public class Grafo {
                     if (distanciaV > (distaciaU + custo)) {
                         coluna.setDistancia(distaciaU + custo);
                         coluna.setPai(u);
-                        // System.out.println(vetorDeRoteamento + "\n");
-                        // change = true;
                     }
                 }
             }
-            // if (!change) {
-            // System.out.println(vetorDeRoteamento + "\n");
-            // }
         }
         return vetorDeRoteamento;
     }
