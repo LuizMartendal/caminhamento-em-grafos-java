@@ -1,3 +1,4 @@
+//Luiz Henrique Martendal; Daniel Krüger
 package model;
 
 public class ColunaVetorRoteamento {
