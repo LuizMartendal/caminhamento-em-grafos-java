@@ -1,2 +1,2 @@
-# CaminhamentoEmGrafos-Java
- Trabalho de Teoria dos Grafos sobre Caminhamento em grafos
+# Trabalho de Teoria dos Grafos 
+- Utilizando o algoritmo do carteiro chinês, Dijkstra e Fleury para identificar um caminho minímo em alguma situação
